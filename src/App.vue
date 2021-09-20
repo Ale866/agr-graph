@@ -25,7 +25,7 @@ export default Vue.extend({
           {
             headers: {
               Authorization:
-                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NiIsIm5hbWUiOiJtLmZvY2FyZXRhQGFncmljb2x1cy5jb20iLCJyb2xlIjpbIkFkbWluaXN0cmF0b3IiLCJBcHByb3ZlcnMiLCJDYW5DaGFuZ2VGZWF0dXJlcyIsIkNhbkFkZEZlYXR1cmVzIl0sIm9yZ2FuaXphdGlvbl9pZCI6IjY1IiwidXNlcl9maXN0X25hbWUiOiJNaWNoZWxlIiwidXNlcl9sYXN0X25hbWUiOiJGb2NhcmV0YSIsImFncm9fb2YiOiIxODEiLCJ0b2tlbl91c2FnZSI6ImFjY2Vzc190b2tlbiIsImp0aSI6IjMwNGJmYzA4LTQwODQtNGY1Mi1iNGRiLWQzYzIwNDI1MzM5OCIsInNjb3BlIjpbIm9wZW5pZCIsInByb2ZpbGUiLCJlbWFpbCJdLCJhenAiOiJhZ3JpY29sdXNfd2ViIiwibmJmIjoxNjMxODY0MjQwLCJleHAiOjE2MzE5MDc0NDAsImlhdCI6MTYzMTg2NDI0MCwiaXNzIjoiaHR0cHM6Ly9zdGFnaW5nLWF1dGguYWdyaWNvbHVzLmNvbS8ifQ.pG2XltY3RgX0soOzvJAP3oThd9QktBc4Iuk1DDNyBRQ",
+                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NiIsIm5hbWUiOiJtLmZvY2FyZXRhQGFncmljb2x1cy5jb20iLCJyb2xlIjpbIkFkbWluaXN0cmF0b3IiLCJBcHByb3ZlcnMiLCJDYW5DaGFuZ2VGZWF0dXJlcyIsIkNhbkFkZEZlYXR1cmVzIl0sIm9yZ2FuaXphdGlvbl9pZCI6IjY1IiwidXNlcl9maXN0X25hbWUiOiJNaWNoZWxlIiwidXNlcl9sYXN0X25hbWUiOiJGb2NhcmV0YSIsImFncm9fb2YiOiIxODEiLCJ0b2tlbl91c2FnZSI6ImFjY2Vzc190b2tlbiIsImp0aSI6Ijg1MGNiMmJlLTE4ZTgtNGMwNy04MGY0LTBlMGUwN2NkMWE4NiIsInNjb3BlIjpbIm9wZW5pZCIsInByb2ZpbGUiLCJlbWFpbCJdLCJhenAiOiJhZ3JpY29sdXNfd2ViIiwibmJmIjoxNjMyMTIyMzU0LCJleHAiOjE2MzIxNjU1NTQsImlhdCI6MTYzMjEyMjM1NCwiaXNzIjoiaHR0cHM6Ly9zdGFnaW5nLWF1dGguYWdyaWNvbHVzLmNvbS8ifQ.5OzBtE1exZbR60r0sbo0zIr5NIS5M6YLZzVdQtBHKhw",
             },
           }
         )
@@ -33,14 +33,40 @@ export default Vue.extend({
           this.getDataResponse = resp.data.filter(
             (f) => !(f.type == "Customer" && f.parentId == "273")
           );
-          console.log(this.getDataResponse);
         });
     },
-    formatData() {
+    displayFirstLevel() {
       for (let i = 0; i < this.getDataResponse.length; i++) {
-        if (this.getDataResponse[i].level === 1)
+        if (this.getDataResponse[i].level === 1) {
           this.formattedData[i] = ["AGRICOLUS", this.getDataResponse[i].name];
+        }
       }
+    },
+    findNode(event) {
+      for (let i = 0; i < this.getDataResponse.length; i++) {
+        if (this.getDataResponse[i].name === event.point.name)
+          var currentNode = this.getDataResponse[i];
+      }
+      this.updateGraph(currentNode);
+    },
+    updateGraph(node) {
+      let index = 0;
+      this.formattedData = [];
+      for (let i = 0; i < this.getDataResponse.length; i++) {
+        let level = node.level + 1;
+        if (this.getDataResponse[i].level === level) {
+          if (this.getDataResponse[i].parentId === node.id) {
+            // console.log(this.getDataResponse[i]);
+            this.formattedData[index] = [
+              node.name,
+              this.getDataResponse[i].name,
+            ];
+            index++;
+            this.createGraph();
+          }
+        }
+      }
+      console.log(this.formattedData);
     },
     createGraph() {
       let body = document.getElementsByTagName("body")[0];
@@ -59,6 +85,11 @@ export default Vue.extend({
               enableSimulation: true,
             },
             keys: ["from", "to"],
+            events: {
+              click: (event) => {
+                this.findNode(event);
+              },
+            },
           },
         },
         series: [
@@ -69,7 +100,7 @@ export default Vue.extend({
             },
             dataLabels: {
               enabled: true,
-              linkFormatter: function() {
+              linkFormatter: function () {
                 return "";
               },
               linkFormat: "",
@@ -78,12 +109,12 @@ export default Vue.extend({
               enableSimulation: true,
               friction: -0.9,
               maxIterations: 1,
-              initialPositions: function() {
+              initialPositions: function () {
                 var chart = this.series[0].chart,
                   width = chart.plotWidth,
                   height = chart.plotHeight;
 
-                this.nodes.forEach(function(node, i) {
+                this.nodes.forEach(function (node, i) {
                   if (i === 0) {
                     node.plotX = body.clientWidth / 2;
                     node.plotY = 100;
@@ -121,7 +152,7 @@ export default Vue.extend({
   },
   async mounted() {
     await this.getData();
-    this.formatData();
+    this.displayFirstLevel();
     this.createGraph();
   },
 });
@@ -138,5 +169,9 @@ div {
   width: 100vw;
   height: 100vh;
   background-color: rgb(198, 223, 192);
+}
+path,
+text {
+  cursor: pointer;
 }
 </style>
