@@ -15,6 +15,13 @@ export default Vue.extend({
     return {
       getDataResponse: [],
       formattedData: [],
+      mainNode: {
+        name: "AGRICOLUS",
+        id: 273,
+        level: 0,
+      },
+      previousNode: "",
+      storedData: [],
     };
   },
   methods: {
@@ -25,7 +32,7 @@ export default Vue.extend({
           {
             headers: {
               Authorization:
-                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NiIsIm5hbWUiOiJtLmZvY2FyZXRhQGFncmljb2x1cy5jb20iLCJyb2xlIjpbIkFkbWluaXN0cmF0b3IiLCJBcHByb3ZlcnMiLCJDYW5DaGFuZ2VGZWF0dXJlcyIsIkNhbkFkZEZlYXR1cmVzIl0sIm9yZ2FuaXphdGlvbl9pZCI6IjY1IiwidXNlcl9maXN0X25hbWUiOiJNaWNoZWxlIiwidXNlcl9sYXN0X25hbWUiOiJGb2NhcmV0YSIsImFncm9fb2YiOiIxODEiLCJ0b2tlbl91c2FnZSI6ImFjY2Vzc190b2tlbiIsImp0aSI6Ijg1MGNiMmJlLTE4ZTgtNGMwNy04MGY0LTBlMGUwN2NkMWE4NiIsInNjb3BlIjpbIm9wZW5pZCIsInByb2ZpbGUiLCJlbWFpbCJdLCJhenAiOiJhZ3JpY29sdXNfd2ViIiwibmJmIjoxNjMyMTIyMzU0LCJleHAiOjE2MzIxNjU1NTQsImlhdCI6MTYzMjEyMjM1NCwiaXNzIjoiaHR0cHM6Ly9zdGFnaW5nLWF1dGguYWdyaWNvbHVzLmNvbS8ifQ.5OzBtE1exZbR60r0sbo0zIr5NIS5M6YLZzVdQtBHKhw",
+                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NiIsIm5hbWUiOiJtLmZvY2FyZXRhQGFncmljb2x1cy5jb20iLCJyb2xlIjpbIkFkbWluaXN0cmF0b3IiLCJBcHByb3ZlcnMiLCJDYW5DaGFuZ2VGZWF0dXJlcyIsIkNhbkFkZEZlYXR1cmVzIl0sIm9yZ2FuaXphdGlvbl9pZCI6IjY1IiwidXNlcl9maXN0X25hbWUiOiJNaWNoZWxlIiwidXNlcl9sYXN0X25hbWUiOiJGb2NhcmV0YSIsImFncm9fb2YiOiIxODEiLCJ0b2tlbl91c2FnZSI6ImFjY2Vzc190b2tlbiIsImp0aSI6IjA2OGZiOTQyLWMzM2EtNGYzYy05YTEwLWY2OTRlNDUyODRkNCIsInNjb3BlIjpbIm9wZW5pZCIsInByb2ZpbGUiLCJlbWFpbCJdLCJhenAiOiJhZ3JpY29sdXNfd2ViIiwibmJmIjoxNjMyMjA5MTI2LCJleHAiOjE2MzIyNTIzMjYsImlhdCI6MTYzMjIwOTEyNiwiaXNzIjoiaHR0cHM6Ly9zdGFnaW5nLWF1dGguYWdyaWNvbHVzLmNvbS8ifQ.C7atX2PjQuFcvrDCEzja52kvq9ypsL5Pcnsq2_YdDm8",
             },
           }
         )
@@ -38,35 +45,67 @@ export default Vue.extend({
     displayFirstLevel() {
       for (let i = 0; i < this.getDataResponse.length; i++) {
         if (this.getDataResponse[i].level === 1) {
-          this.formattedData[i] = ["AGRICOLUS", this.getDataResponse[i].name];
+          this.formattedData[i] = [
+            this.mainNode.name,
+            this.getDataResponse[i].name,
+          ];
         }
       }
+    },
+    resetData() {
+      this.previousNode = "";
+      this.storedData = [];
     },
     findNode(event) {
       for (let i = 0; i < this.getDataResponse.length; i++) {
         if (this.getDataResponse[i].name === event.point.name)
           var currentNode = this.getDataResponse[i];
       }
+      if (event.point.name === "AGRICOLUS") {
+        this.resetData();
+        currentNode = this.mainNode;
+      }
       this.updateGraph(currentNode);
     },
     updateGraph(node) {
-      let index = 0;
+      let index = 1;
       this.formattedData = [];
+      let level = node.level + 1;
+      let flag = false;
+
+      if (node.parentId === this.mainNode.id) {
+        this.storedData[0] = [this.mainNode.name, node.name];
+      }
+      if (this.storedData.length > 0) {
+        this.formattedData[0] = this.storedData[0];
+      }
+
       for (let i = 0; i < this.getDataResponse.length; i++) {
-        let level = node.level + 1;
         if (this.getDataResponse[i].level === level) {
           if (this.getDataResponse[i].parentId === node.id) {
-            // console.log(this.getDataResponse[i]);
-            this.formattedData[index] = [
-              node.name,
-              this.getDataResponse[i].name,
-            ];
-            index++;
-            this.createGraph();
+            if (!(this.previousNode === node)) {
+              if (this.previousNode != "" && flag === false) {
+                this.formattedData[index] = [this.previousNode.name, node.name];
+                index++;
+              }
+              this.formattedData[index] = [
+                node.name,
+                this.getDataResponse[i].name,
+              ];
+              index++;
+              flag = true;
+            }
           }
         }
       }
       console.log(this.formattedData);
+
+      if (flag) {
+        this.previousNode = node;
+      }
+      if (this.formattedData.length > 1) {
+        this.createGraph();
+      }
     },
     createGraph() {
       let body = document.getElementsByTagName("body")[0];
@@ -129,7 +168,7 @@ export default Vue.extend({
             },
             nodes: [
               {
-                id: "AGRICOLUS",
+                id: this.mainNode.name,
                 dataLabels: {
                   enabled: true,
                   verticalAlign: "bottom",
