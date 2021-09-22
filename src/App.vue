@@ -142,10 +142,6 @@ export default Vue.extend({
         node.color =
           this.getDataResponse[i].type == "BusinessUnit" ? "#362dcc" : "yellow";
       }
-      // console.log(node);
-
-      // node.id
-      // const t = that.getDataResponse.find((e) => e.name == this.key);
     },
     createGraph() {
       let body = document.getElementsByTagName("body")[0];
