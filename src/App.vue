@@ -26,6 +26,10 @@ export default Vue.extend({
 			storedData: [],
 			currentPage: 0,
 			prova: true,
+			btn: false,
+			temp: Object,
+			displayNext: true,
+			displayPrev: true
 		};
 	},
 	methods: {
@@ -36,7 +40,7 @@ export default Vue.extend({
 					{
 						headers: {
 							Authorization:
-								"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NiIsIm5hbWUiOiJtLmZvY2FyZXRhQGFncmljb2x1cy5jb20iLCJyb2xlIjpbIkFkbWluaXN0cmF0b3IiLCJBcHByb3ZlcnMiLCJDYW5DaGFuZ2VGZWF0dXJlcyIsIkNhbkFkZEZlYXR1cmVzIl0sIm9yZ2FuaXphdGlvbl9pZCI6IjY1IiwidXNlcl9maXN0X25hbWUiOiJNaWNoZWxlIiwidXNlcl9sYXN0X25hbWUiOiJGb2NhcmV0YSIsImFncm9fb2YiOiIxODEiLCJ0b2tlbl91c2FnZSI6ImFjY2Vzc190b2tlbiIsImp0aSI6IjM4MzA2MTg2LTMxMDgtNGQ1OS1iNGUzLWMyNWVhZTlmOTI3ZiIsInNjb3BlIjpbIm9wZW5pZCIsInByb2ZpbGUiLCJlbWFpbCJdLCJhenAiOiJhZ3JpY29sdXNfd2ViIiwibmJmIjoxNjMyMjk1NjU0LCJleHAiOjE2MzIzMzg4NTQsImlhdCI6MTYzMjI5NTY1NCwiaXNzIjoiaHR0cHM6Ly9zdGFnaW5nLWF1dGguYWdyaWNvbHVzLmNvbS8ifQ.hyBE5SYYLiXHPMjQ9Kf8PmIZsdXSCEKhQKX1oLxIxeg",
+								"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NiIsIm5hbWUiOiJtLmZvY2FyZXRhQGFncmljb2x1cy5jb20iLCJyb2xlIjpbIkFkbWluaXN0cmF0b3IiLCJBcHByb3ZlcnMiLCJDYW5DaGFuZ2VGZWF0dXJlcyIsIkNhbkFkZEZlYXR1cmVzIl0sIm9yZ2FuaXphdGlvbl9pZCI6IjY1IiwidXNlcl9maXN0X25hbWUiOiJNaWNoZWxlIiwidXNlcl9sYXN0X25hbWUiOiJGb2NhcmV0YSIsImFncm9fb2YiOiIxODEiLCJ0b2tlbl91c2FnZSI6ImFjY2Vzc190b2tlbiIsImp0aSI6IjI5MjQ1NzcyLTMzNTktNDdmZi04Y2JmLTQzZDc2MWNlZTVlNCIsInNjb3BlIjpbIm9wZW5pZCIsInByb2ZpbGUiLCJlbWFpbCJdLCJhenAiOiJhZ3JpY29sdXNfd2ViIiwibmJmIjoxNjMyMzgyMzIwLCJleHAiOjE2MzI0MjU1MjAsImlhdCI6MTYzMjM4MjMyMCwiaXNzIjoiaHR0cHM6Ly9zdGFnaW5nLWF1dGguYWdyaWNvbHVzLmNvbS8ifQ.o7DgzwQlXIcBIBZuq0Z3eir54PY--mVjJYcbxICAtxc",
 						},
 					}
 				)
@@ -44,9 +48,13 @@ export default Vue.extend({
 					this.getDataResponse = resp.data.filter(
 						(f) => !(f.type == "Customer" && f.parentId == "273")
 					);
+					// for (let i = 0; i < this.getDataResponse.length; i++) {
+					// 	console.log(this.getDataResponse[i].id);
+					// }
+
 				});
 		},
-		displayFirstLevel(n: number) {
+		displayFirstLevel(n?: number) {
 			for (let i = 0; i < this.getDataResponse.length; i++) {
 				if (this.getDataResponse[i].level === 1) {
 					this.formattedData[i] = [
@@ -96,63 +104,109 @@ export default Vue.extend({
 			this.slicedData = [];
 			let level = node.level + 1;
 			let flag = false;
-			if (node.parentId === this.mainNode.id) {
+			let prevNode = this.previousNode;
+			let diff = prevNode.level - node.level
+
+			if (node.parentId == this.mainNode.id) {
 				this.storedData[0] = [this.mainNode.name, node.name];
 			}
-			if (this.storedData.length > 0) {
-				this.slicedData[0] = this.storedData[0];
+
+			if (this.storedData.length) {
+				this.slicedData[0] = this.storedData[0]
 			}
 
-			let prevNode = this.previousNode;
+			let response = this.getDataResponse.filter(
+				(f) => f.level == level && f.parentId == node.id
+			);
+
+			if (response.length && prevNode != node) {
+
+				if (prevNode.id == node.parentId) {
+					this.storedData.push([prevNode.name, node.name])
+				}
+
+				if (diff > 1) {
+					while (diff != 1) {
+						this.storedData.pop()
+						diff--
+					}
+				}
+
+				for (let i = 1; i <= this.storedData.length; i++) {
+					this.slicedData.push(this.storedData[i]);
+				}
+
+			}
+			index = this.storedData.length
+
 			if (node != this.mainNode) {
 				this.prova = false
+				this.displayNext = false
+				this.displayPrev = false
 			}
 			else {
 				this.prova = true
+				this.displayNext = true
+				this.displayPrev = true
 			}
 
+			this.temp = node
+
 			if (prevNode != node) {
-				let response = this.getDataResponse.filter(
-					(f) => f.level == level && f.parentId == node.id
-				);
+				
 				for (let i = 0; i < response.length; i++) {
+
 					let r = response[i];
-					if (prevNode && !flag) {
-						this.slicedData[index] = [prevNode.name, node.name];
-						index++;
-					}
+					// if (prevNode && !flag) {
+					// 	this.slicedData[index] = [prevNode.name, node.name];
+					// 	index++;
+					// }
 					this.slicedData[index] = [node.name, r.name];
 					index++;
 					flag = true;
 				}
 			}
+
 			if (node.id == 273) {
-				this.slicedData = this.slicedData.slice(1, this.totalElements + 1);
+				this.slicedData = this.slicedData.sort((a, b) =>
+					a[1].toUpperCase().localeCompare(b[1].toUpperCase())
+				);
+				this.slicedData = this.slicedData.slice(0, this.totalElements);
 			}
 			if (flag) {
 				this.previousNode = node;
 			}
+
 			if (this.slicedData.length > 1) {
 				this.createGraph();
 			}
 		},
-		displayNode(node, i, len) {
-			console.log("ZAA");
-
-			// se nodo di indice i + 1 ha lo stesso id del nodo di indice i, diplay uno sotto l'altro
+		displayNode(node, i) {
 			let body = document.getElementsByTagName("body")[0];
 			if (i == 0) {
 				node.plotX = body.clientWidth / 2;
 				node.plotY = 70;
 			} else if (i != 0) {
-				node.color = this.getDataResponse[i].type == "BusinessUnit" ? "#362dcc" : "yellow";
+				var t = this.getDataResponse.find((e) => e.name == node.id)
+				// a è node, t è oggetto corrente
+				// if (node.id == this.temp.name) {
+				// 	var a = node
+				// }
+				let parentElement = this.getDataResponse.find(e => e.id == this.temp.parentId)
+				// if(parentElement){
+				// 	console.log(parentElement.name);	
+				// }
+				if (this.getDataResponse.find((e) => e.id == this.temp.parentId)) {
 
+					// console.log("AAAAA");
+
+				}
+				node.color = t.type == "BusinessUnit" ? "#362dcc" : "yellow";
 				if (this.prova == true) {
 					node.plotX = ((body.clientWidth - 140) / this.totalElements) * i;
 					node.plotY = 300;
 				}
 				else {
-					// let array = this.getDataResponse.filter((e) => e.name == node.id);
 					if (i == 1) {
 						node.plotX = body.clientWidth / 2;
 						node.plotY = 300
@@ -162,7 +216,6 @@ export default Vue.extend({
 						node.plotX = ((body.clientWidth - 140) / this.totalElements) * i;
 						node.plotY = 450;
 					}
-
 					// else if (t.id === this.getDataResponse[i - 1].id) {
 					// 	node.plotX = ((body.clientWidth - 140) / this.totalElements) * i;
 					// 	node.plotY = 450;
@@ -195,7 +248,7 @@ export default Vue.extend({
 							const t = dummyArray.find((e) => e.name == this.key);
 							let string;
 							if (t.email != undefined) {
-								string = `<strong>email:</strong> ${t.email} <br> <strong>name:</strong> ${t.name} <br> <strong>id:</strong> ${t.id}`;
+								string = `<strong>email:</strong> ${t.email} <br> <strong>name:</strong> ${t.name} <br> <strong>id:</strong> ${t.id} <br> <strong>parentId:</strong> ${t.parentId}`;
 							} else {
 								string = `<strong>name:</strong> ${t.name} <br> <strong>id:</strong> ${t.id}`;
 							}
@@ -237,10 +290,11 @@ export default Vue.extend({
 									// var chart = this.series[0].chart
 									// width = chart.plotWidth,
 									// height = chart.plotHeight;
+
 									// eslint-disable-next-line @typescript-eslint/no-this-alias
 									let nodesThis = this
 									this.nodes.forEach(function (node, i) {
-										that.displayNode(node, i, nodesThis.nodes.length);
+										that.displayNode(node, i,);
 									});
 								},
 							},
@@ -278,20 +332,26 @@ export default Vue.extend({
 								zIndex: 5,
 							})
 							.on("click", function () {
-								that.displayFirstLevel(1);
-								that.createGraph();
+								if (that.displayNext) {
+									that.currentPage >
+										Math.floor(that.formattedData.length / that.totalElements) - 1
+										? that.displayNext = false
+										: that.displayNext = true
+									if (that.displayNext) {
+										that.displayFirstLevel(1);
+										that.createGraph();
+									}
+								}
 							})
 							.add(),
 						box = text.getBBox();
 
 					chart.renderer
+						// .image('https://www.highcharts.com/samples/graphics/sun.png', (body.clientWidth - 60), 330, 30, 30)
 						.rect(box.x - 5, box.y - 5, box.width + 10, box.height + 10, 5)
 						.attr({
 							fill:
-								that.currentPage >
-									Math.floor(that.formattedData.length / that.totalElements) - 1
-									? "gray"
-									: "green ",
+								that.displayNext ? that.currentPage > Math.floor(that.formattedData.length / that.totalElements) - 1 ? "gray" : "green" : "gray",
 							stroke: "green",
 							"stroke-width": 1,
 							zIndex: 4,
@@ -308,8 +368,16 @@ export default Vue.extend({
 							zIndex: 5,
 						})
 						.on("click", function () {
-							that.displayFirstLevel(-1);
-							that.createGraph();
+							if (that.displayPrev) {
+								that.currentPage == 0 ? that.displayPrev = false : that.displayPrev = true
+								if (that.displayPrev) {
+									console.log("A");
+
+									that.displayFirstLevel(-1);
+									that.createGraph();
+								}
+							}
+
 						})
 						.add()),
 						(box = text.getBBox());
@@ -317,7 +385,7 @@ export default Vue.extend({
 					chart.renderer
 						.rect(box.x - 5, box.y - 5, box.width + 10, box.height + 10, 5)
 						.attr({
-							fill: that.currentPage == 0 ? "gray" : "green",
+							fill: that.displayPrev ? that.currentPage == 0 ? "gray" : "green" : "gray",
 							stroke: "green",
 							"stroke-width": 1,
 							zIndex: 4,
