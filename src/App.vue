@@ -151,8 +151,8 @@ export default Vue.extend({
 					this.storedData.push([prevNode.email, node.email])
 				}
 
-				if (diff > 1) {
-					while (diff != 1) {
+				if (diff >= 1) {
+					while (diff != 0) {
 						this.storedData.pop()
 						diff--
 					}
@@ -175,7 +175,9 @@ export default Vue.extend({
 			}
 			if (node.id == 273) {
 				this.slicedData = this.slicedData.sort((a, b) =>
-					a[2].toUpperCase().localeCompare(b[2].toUpperCase())
+					a[1].toUpperCase().localeCompare(b[1].toUpperCase(),
+						console.log(a[1], b[1])
+					)
 				);
 				this.slicedData = this.slicedData.slice(0, this.totalElements);
 			}
@@ -271,7 +273,7 @@ export default Vue.extend({
 							const t = dummyArray.find((e) => e.email == this.key);
 							let string;
 							if (t.email != "AGRICOLUS") {
-								string = `<strong>email:</strong> ${t.email} <br> <strong>name:</strong> ${t.name}`;
+								string = `<strong>email:</strong> ${t.email} <br> <strong>name:</strong> ${t.name} <br> <strong>id:</strong> ${t.id} <br> <strong>parentId:</strong> ${t.parentId}`;
 								// <br> <strong>id:</strong> ${t.id} <br> <strong>parentId:</strong> ${t.parentId}
 							} else {
 								string = `<strong>name:</strong> ${t.name} <br> <strong>id:</strong> ${t.id}`;
@@ -372,7 +374,8 @@ export default Vue.extend({
 								(point.plotY = 350)
 							)
 							.attr({
-								zIndex: 5,							})
+								zIndex: 5,
+							})
 							.on("click", function () {
 								if (that.displayNext) {
 									that.currentPage >
