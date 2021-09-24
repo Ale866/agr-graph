@@ -79,7 +79,7 @@ export default Vue.extend({
 			}
 
 			this.formattedData = this.formattedData.sort((a, b) =>
-				a[1].toUpperCase().localeCompare(b[1].toUpperCase())
+				a[2].toUpperCase().localeCompare(b[2].toUpperCase())
 			);
 
 			let e = this.totalElements;
@@ -161,33 +161,21 @@ export default Vue.extend({
 				for (let i = 1; i <= this.storedData.length; i++) {
 					this.slicedData.push(this.storedData[i]);
 				}
-
 			}
 			index = this.storedData.length
-
 			this.temp = node
 
 			if (prevNode != node) {
-
 				for (let i = 0; i < response.length; i++) {
-
 					let r = response[i];
-					// if (prevNode && !flag) {
-					// 	this.slicedData[index] = [prevNode.name, node.name];
-					// 	index++;
-					// }
 					this.slicedData[index] = [node.email, r.email];
-					// console.log(this.slicedData[index]);
-
 					index++;
 					flag = true;
 				}
 			}
-
-
 			if (node.id == 273) {
 				this.slicedData = this.slicedData.sort((a, b) =>
-					a[1].toUpperCase().localeCompare(b[1].toUpperCase())
+					a[2].toUpperCase().localeCompare(b[2].toUpperCase())
 				);
 				this.slicedData = this.slicedData.slice(0, this.totalElements);
 			}
@@ -222,8 +210,8 @@ export default Vue.extend({
 
 					// console.log("AAAAA");
 				}
-				// node.color = t.type == "BusinessUnit" ? t.hasChild ? "#362dcc" : "#6788AF" : t.hasChil ? "yellow" : "#b6cc5c";
-				node.color = t.type == "BusinessUnit" ? "#362dcc" : "yellow";
+				node.color = t.type == "BusinessUnit" ? t.hasChild ? "#362dcc" : "#6788AF" : t.hasChil ? "yellow" : "#b6cc5c";
+				// node.color = t.type == "BusinessUnit" ? "#362dcc" : "yellow";
 				if (this.prova == true) {
 					node.plotX = ((body.clientWidth - 140) / this.totalElements) * i;
 					node.plotY = 300;
@@ -347,7 +335,7 @@ export default Vue.extend({
 									marker: {
 										symbol: "circle",
 										radius: 30,
-										fillColor: "green",
+										fillColor: "#1d5644",
 									},
 								},
 							],
@@ -384,8 +372,7 @@ export default Vue.extend({
 								(point.plotY = 350)
 							)
 							.attr({
-								zIndex: 5,
-							})
+								zIndex: 5,							})
 							.on("click", function () {
 								if (that.displayNext) {
 									that.currentPage >
@@ -400,13 +387,14 @@ export default Vue.extend({
 							})
 							.add(),
 						box = text.getBBox();
+
 					chart.renderer
-						// .image('https://www.highcharts.com/samples/graphics/sun.png', (body.clientWidth - 60), 330, 30, 30)
+						// .image('favicon.ico', (body.clientWidth - 60), 330, 30, 30)
 						.rect(box.x - 5, box.y - 5, box.width + 10, box.height + 10, 5)
 						.attr({
 							fill:
-								that.displayNext ? that.currentPage > Math.floor(that.formattedData.length / that.totalElements) - 1 ? "gray" : "green" : "gray",
-							stroke: "green",
+								that.displayNext ? that.currentPage > Math.floor(that.formattedData.length / that.totalElements) - 1 ? "gray" : "#1d5644" : "gray",
+							stroke: "#1d5644",
 							"stroke-width": 1,
 							zIndex: 4,
 						})
@@ -436,8 +424,8 @@ export default Vue.extend({
 					chart.renderer
 						.rect(box.x - 5, box.y - 5, box.width + 10, box.height + 10, 5)
 						.attr({
-							fill: that.displayPrev ? that.currentPage == 0 ? "gray" : "green" : "gray",
-							stroke: "green",
+							fill: that.displayPrev ? that.currentPage == 0 ? "gray" : "#1d5644" : "gray",
+							stroke: "#1d5644",
 							"stroke-width": 1,
 							zIndex: 4,
 						})
