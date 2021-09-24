@@ -40,7 +40,7 @@ export default Vue.extend({
 					{
 						headers: {
 							Authorization:
-								"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NiIsIm5hbWUiOiJtLmZvY2FyZXRhQGFncmljb2x1cy5jb20iLCJyb2xlIjpbIkFkbWluaXN0cmF0b3IiLCJBcHByb3ZlcnMiLCJDYW5DaGFuZ2VGZWF0dXJlcyIsIkNhbkFkZEZlYXR1cmVzIl0sIm9yZ2FuaXphdGlvbl9pZCI6IjY1IiwidXNlcl9maXN0X25hbWUiOiJNaWNoZWxlIiwidXNlcl9sYXN0X25hbWUiOiJGb2NhcmV0YSIsImFncm9fb2YiOiIxODEiLCJ0b2tlbl91c2FnZSI6ImFjY2Vzc190b2tlbiIsImp0aSI6IjI5MjQ1NzcyLTMzNTktNDdmZi04Y2JmLTQzZDc2MWNlZTVlNCIsInNjb3BlIjpbIm9wZW5pZCIsInByb2ZpbGUiLCJlbWFpbCJdLCJhenAiOiJhZ3JpY29sdXNfd2ViIiwibmJmIjoxNjMyMzgyMzIwLCJleHAiOjE2MzI0MjU1MjAsImlhdCI6MTYzMjM4MjMyMCwiaXNzIjoiaHR0cHM6Ly9zdGFnaW5nLWF1dGguYWdyaWNvbHVzLmNvbS8ifQ.o7DgzwQlXIcBIBZuq0Z3eir54PY--mVjJYcbxICAtxc",
+								"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NiIsIm5hbWUiOiJtLmZvY2FyZXRhQGFncmljb2x1cy5jb20iLCJyb2xlIjpbIkFkbWluaXN0cmF0b3IiLCJBcHByb3ZlcnMiLCJDYW5DaGFuZ2VGZWF0dXJlcyIsIkNhbkFkZEZlYXR1cmVzIl0sIm9yZ2FuaXphdGlvbl9pZCI6IjY1IiwidXNlcl9maXN0X25hbWUiOiJNaWNoZWxlIiwidXNlcl9sYXN0X25hbWUiOiJGb2NhcmV0YSIsImFncm9fb2YiOiIxODEiLCJ0b2tlbl91c2FnZSI6ImFjY2Vzc190b2tlbiIsImp0aSI6IjBmMzg2MGRlLWJjZDUtNDJlNi1hZmYyLWEyZDE1YWQ4YWFkNiIsInNjb3BlIjpbIm9wZW5pZCIsInByb2ZpbGUiLCJlbWFpbCJdLCJhenAiOiJhZ3JpY29sdXNfd2ViIiwibmJmIjoxNjMyNDY4MDA2LCJleHAiOjE2MzI1MTEyMDYsImlhdCI6MTYzMjQ2ODAwNiwiaXNzIjoiaHR0cHM6Ly9zdGFnaW5nLWF1dGguYWdyaWNvbHVzLmNvbS8ifQ.D4dIE2tDPxE9Roe-AWjJmioZhdyYXqkvZzQ_tHL3Pjc",
 						},
 					}
 				)
@@ -48,11 +48,23 @@ export default Vue.extend({
 					this.getDataResponse = resp.data.filter(
 						(f) => !(f.type == "Customer" && f.parentId == "273")
 					);
+					this.hasChild()
 					// for (let i = 0; i < this.getDataResponse.length; i++) {
-					// 	console.log(this.getDataResponse[i].id);
+					// 	console.log(this.getDataResponse[i].name, this.getDataResponse[i].hasChild);
 					// }
-
 				});
+		},
+		hasChild() {
+			for (let i = 0; i < this.getDataResponse.length; i++) {
+				for (let j = 0; j < this.getDataResponse.length; j++) {
+					if (this.getDataResponse[i].id == this.getDataResponse[j].parentId) {
+						this.getDataResponse[i].hasChild = true
+					}
+				}
+			}
+			// for (let i = 0; i < this.getDataResponse.length; i++) {
+			// 	this.getDataResponse[i].name = "tuttiuguali"
+			// }
 		},
 		displayFirstLevel(n?: number) {
 			for (let i = 0; i < this.getDataResponse.length; i++) {
@@ -60,6 +72,7 @@ export default Vue.extend({
 					this.formattedData[i] = [
 						this.mainNode.name,
 						this.getDataResponse[i].name,
+						this.getDataResponse[i].email
 					];
 				}
 			}
@@ -84,10 +97,12 @@ export default Vue.extend({
 			);
 		},
 		findNode(event) {
+
 			for (let i = 0; i < this.getDataResponse.length; i++) {
 				if (this.getDataResponse[i].name === event.point.name)
 					var currentNode = this.getDataResponse[i];
 			}
+
 			if (event.point.name === "AGRICOLUS") {
 				this.resetData();
 				currentNode = this.mainNode;
@@ -121,6 +136,17 @@ export default Vue.extend({
 
 			if (response.length && prevNode != node) {
 
+				if (node != this.mainNode) {
+					this.prova = false
+					this.displayNext = false
+					this.displayPrev = false
+				}
+				else {
+					this.prova = true
+					this.displayNext = true
+					this.displayPrev = true
+				}
+
 				if (prevNode.id == node.parentId) {
 					this.storedData.push([prevNode.name, node.name])
 				}
@@ -139,21 +165,10 @@ export default Vue.extend({
 			}
 			index = this.storedData.length
 
-			if (node != this.mainNode) {
-				this.prova = false
-				this.displayNext = false
-				this.displayPrev = false
-			}
-			else {
-				this.prova = true
-				this.displayNext = true
-				this.displayPrev = true
-			}
-
 			this.temp = node
 
 			if (prevNode != node) {
-				
+
 				for (let i = 0; i < response.length; i++) {
 
 					let r = response[i];
@@ -162,10 +177,13 @@ export default Vue.extend({
 					// 	index++;
 					// }
 					this.slicedData[index] = [node.name, r.name];
+					// console.log(this.slicedData[index]);
+
 					index++;
 					flag = true;
 				}
 			}
+
 
 			if (node.id == 273) {
 				this.slicedData = this.slicedData.sort((a, b) =>
@@ -180,8 +198,10 @@ export default Vue.extend({
 			if (this.slicedData.length > 1) {
 				this.createGraph();
 			}
+
 		},
 		displayNode(node, i) {
+
 			let body = document.getElementsByTagName("body")[0];
 			if (i == 0) {
 				node.plotX = body.clientWidth / 2;
@@ -196,11 +216,13 @@ export default Vue.extend({
 				// if(parentElement){
 				// 	console.log(parentElement.name);	
 				// }
+				// console.log(t);
+
 				if (this.getDataResponse.find((e) => e.id == this.temp.parentId)) {
 
 					// console.log("AAAAA");
-
 				}
+				// node.color = t.type == "BusinessUnit" ? t.hasChild ? "#362dcc" : "#6788AF" : t.hasChil ? "yellow" : "#b6cc5c";
 				node.color = t.type == "BusinessUnit" ? "#362dcc" : "yellow";
 				if (this.prova == true) {
 					node.plotX = ((body.clientWidth - 140) / this.totalElements) * i;
@@ -212,7 +234,6 @@ export default Vue.extend({
 						node.plotY = 300
 					}
 					else {
-
 						node.plotX = ((body.clientWidth - 140) / this.totalElements) * i;
 						node.plotY = 450;
 					}
@@ -241,14 +262,17 @@ export default Vue.extend({
 						text: "Agricolus Graph",
 					},
 					tooltip: {
+						
 						formatter: function () {
+
 							let dummyArray = [];
 							dummyArray = that.getDataResponse;
 							dummyArray.unshift(that.mainNode);
 							const t = dummyArray.find((e) => e.name == this.key);
 							let string;
 							if (t.email != undefined) {
-								string = `<strong>email:</strong> ${t.email} <br> <strong>name:</strong> ${t.name} <br> <strong>id:</strong> ${t.id} <br> <strong>parentId:</strong> ${t.parentId}`;
+								string = `<strong>email:</strong> ${t.email} <br> <strong>name:</strong> ${t.name}`;
+								// <br> <strong>id:</strong> ${t.id} <br> <strong>parentId:</strong> ${t.parentId}
 							} else {
 								string = `<strong>name:</strong> ${t.name} <br> <strong>id:</strong> ${t.id}`;
 							}
@@ -261,7 +285,7 @@ export default Vue.extend({
 							layoutAlgorithm: {
 								enableSimulation: true,
 							},
-							keys: ["from", "to"],
+							keys: ["from", "to", "name"],
 							events: {
 								click: (event) => {
 									this.findNode(event);
@@ -271,14 +295,18 @@ export default Vue.extend({
 					},
 					series: [
 						{
+							cursor: "pointer",
 							marker: {
 								symbol: "circle",
 								radius: 15,
 							},
 							dataLabels: {
 								enabled: true,
-								linkFormatter: function () {
-									return "";
+								dataLabels: {
+									enabled: true,
+									// formatter: function () {
+									//     return '' + this.point.email;
+									// }
 								},
 								linkFormat: "",
 							},
@@ -287,14 +315,12 @@ export default Vue.extend({
 								friction: -0.9,
 								maxIterations: 1,
 								initialPositions: function () {
+
 									// var chart = this.series[0].chart
 									// width = chart.plotWidth,
 									// height = chart.plotHeight;
-
-									// eslint-disable-next-line @typescript-eslint/no-this-alias
-									let nodesThis = this
 									this.nodes.forEach(function (node, i) {
-										that.displayNode(node, i,);
+										that.displayNode(node, i);
 									});
 								},
 							},
@@ -321,6 +347,25 @@ export default Vue.extend({
 					],
 				},
 				function (chart): void {
+					var point2 = chart.series[0],
+						labelText = `Page ${that.currentPage + 1} of ${Math.ceil(that.formattedData.length / that.totalElements)}`;
+					chart.renderer.text(labelText, 35, 59)
+						.attr({
+							zIndex: 5
+						})
+						.css({
+							fontSize: '18px'
+						})
+						.add();
+					chart.renderer.rect(30, 30, 110, 45, 5)
+						.attr({
+							'stroke-width': 2,
+							stroke: 'black',
+							fill: 'white',
+							zIndex: 4
+						})
+						.add();
+
 					var point = chart.series[0],
 						text = chart.renderer
 							.text(
@@ -371,8 +416,6 @@ export default Vue.extend({
 							if (that.displayPrev) {
 								that.currentPage == 0 ? that.displayPrev = false : that.displayPrev = true
 								if (that.displayPrev) {
-									console.log("A");
-
 									that.displayFirstLevel(-1);
 									that.createGraph();
 								}
@@ -390,8 +433,8 @@ export default Vue.extend({
 							"stroke-width": 1,
 							zIndex: 4,
 						})
-						.add();
-				}
+						.add()
+				},
 			);
 		},
 	},
@@ -413,9 +456,5 @@ body {
 div {
 	width: 100vw;
 	height: 100vh;
-}
-path,
-text {
-	cursor: pointer;
 }
 </style>
