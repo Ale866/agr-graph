@@ -19,6 +19,7 @@ export default Vue.extend({
 			totalElements: 10,
 			mainNode: {
 				name: "AGRICOLUS",
+				email: "AGRICOLUS",
 				id: 273,
 				level: 0,
 			},
@@ -70,9 +71,9 @@ export default Vue.extend({
 			for (let i = 0; i < this.getDataResponse.length; i++) {
 				if (this.getDataResponse[i].level === 1) {
 					this.formattedData[i] = [
-						this.mainNode.name,
-						this.getDataResponse[i].name,
-						this.getDataResponse[i].email
+						this.mainNode.email,
+						this.getDataResponse[i].email,
+						this.getDataResponse[i].name
 					];
 				}
 			}
@@ -99,10 +100,9 @@ export default Vue.extend({
 		findNode(event) {
 
 			for (let i = 0; i < this.getDataResponse.length; i++) {
-				if (this.getDataResponse[i].name === event.point.name)
+				if (this.getDataResponse[i].email === event.point.name)
 					var currentNode = this.getDataResponse[i];
 			}
-
 			if (event.point.name === "AGRICOLUS") {
 				this.resetData();
 				currentNode = this.mainNode;
@@ -123,7 +123,7 @@ export default Vue.extend({
 			let diff = prevNode.level - node.level
 
 			if (node.parentId == this.mainNode.id) {
-				this.storedData[0] = [this.mainNode.name, node.name];
+				this.storedData[0] = [this.mainNode.name, node.email];
 			}
 
 			if (this.storedData.length) {
@@ -148,7 +148,7 @@ export default Vue.extend({
 				}
 
 				if (prevNode.id == node.parentId) {
-					this.storedData.push([prevNode.name, node.name])
+					this.storedData.push([prevNode.email, node.email])
 				}
 
 				if (diff > 1) {
@@ -176,7 +176,7 @@ export default Vue.extend({
 					// 	this.slicedData[index] = [prevNode.name, node.name];
 					// 	index++;
 					// }
-					this.slicedData[index] = [node.name, r.name];
+					this.slicedData[index] = [node.email, r.email];
 					// console.log(this.slicedData[index]);
 
 					index++;
@@ -207,7 +207,7 @@ export default Vue.extend({
 				node.plotX = body.clientWidth / 2;
 				node.plotY = 70;
 			} else if (i != 0) {
-				var t = this.getDataResponse.find((e) => e.name == node.id)
+				var t = this.getDataResponse.find((e) => e.email == node.id)
 				// a è node, t è oggetto corrente
 				// if (node.id == this.temp.name) {
 				// 	var a = node
@@ -245,6 +245,19 @@ export default Vue.extend({
 				}
 			}
 		},
+		findNames(key) {
+
+			let ref;
+			this.getDataResponse.forEach(el => {
+				if (el.email === key) {
+					ref = el.name
+					return ref
+				}
+				return ref
+			})
+
+			return ref
+		},
 		createGraph() {
 			let body = document.getElementsByTagName("body")[0];
 			// eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -262,15 +275,14 @@ export default Vue.extend({
 						text: "Agricolus Graph",
 					},
 					tooltip: {
-						
-						formatter: function () {
 
+						formatter: function () {
 							let dummyArray = [];
 							dummyArray = that.getDataResponse;
 							dummyArray.unshift(that.mainNode);
-							const t = dummyArray.find((e) => e.name == this.key);
+							const t = dummyArray.find((e) => e.email == this.key);
 							let string;
-							if (t.email != undefined) {
+							if (t.email != "AGRICOLUS") {
 								string = `<strong>email:</strong> ${t.email} <br> <strong>name:</strong> ${t.name}`;
 								// <br> <strong>id:</strong> ${t.id} <br> <strong>parentId:</strong> ${t.parentId}
 							} else {
@@ -302,13 +314,11 @@ export default Vue.extend({
 							},
 							dataLabels: {
 								enabled: true,
-								dataLabels: {
-									enabled: true,
-									// formatter: function () {
-									//     return '' + this.point.email;
-									// }
+								linkFormat: '',
+								formatter: function () {
+									let result = that.findNames(this.key) || "AGRICOLUS"
+									return result
 								},
-								linkFormat: "",
 							},
 							layoutAlgorithm: {
 								enableSimulation: true,
@@ -390,7 +400,6 @@ export default Vue.extend({
 							})
 							.add(),
 						box = text.getBBox();
-
 					chart.renderer
 						// .image('https://www.highcharts.com/samples/graphics/sun.png', (body.clientWidth - 60), 330, 30, 30)
 						.rect(box.x - 5, box.y - 5, box.width + 10, box.height + 10, 5)
@@ -420,7 +429,6 @@ export default Vue.extend({
 									that.createGraph();
 								}
 							}
-
 						})
 						.add()),
 						(box = text.getBBox());
